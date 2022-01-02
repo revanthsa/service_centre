@@ -6,14 +6,14 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
 
-# Import for Sending Mail
+# Others
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 # Regex for Indian Pincode
 pincode_regex = RegexValidator(
-	regex=r'^[1-9]{1}[0-9]{2}\\s{0, 1}[0-9]{3}$',
-	message="Invalid Indian pincode Detail!\nContact Us, if you have entered the correct Pincode Detail and sill it didn't accept the given Input"
+	regex=r'^[1-9]{1}[0-9]{5}$',
+	message="Invalid Indian pincode Detail!\nContact Us, if you have entered the correct Pincode Detail and still it didn't accept the given Input"
 )
 
 # Create your models here.
@@ -32,7 +32,7 @@ class User_Manager(BaseUserManager):
 		if not pin_code:
 			raise ValueError('The given pincode must be set')
 		email = self.normalize_email(email)
-		user = self.model(name=name, phone=phone, email=email, address=address, pin_code=pin_code **extra_fields)
+		user = self.model(name=name, phone=phone, email=email, address=address, pin_code=pin_code, **extra_fields)
 		user.set_password(password)
 		user.save(using=self._db)
 		return user
