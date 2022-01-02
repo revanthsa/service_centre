@@ -14,12 +14,12 @@
 
 <body>
     <nav class="navbar navbar-dark navbar-expand-lg fixed-top bg-white portfolio-navbar gradient">
-        <div class="container"><a class="navbar-brand logo" href="#">R15-Services</a><button data-toggle="collapse" class="navbar-toggler" data-target="#navbarNav"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+        <div class="container"><a class="navbar-brand logo">SteerX</a><button data-toggle="collapse" class="navbar-toggler" data-target="#navbarNav"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse"
                 id="navbarNav">
                 <ul class="nav navbar-nav ml-auto">
-                    <li class="nav-item"><a class="nav-link" href="/login/">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/register/">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'admin:login' %}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
                 </ul>
             </div>
         </div>
@@ -73,7 +73,11 @@
     <footer class="page-footer">
         <div class="container">
             <div class="links"><a href="#">Contact US</a></div>
-            <div class="social-icons"><a href="#"><i class="icon ion-social-facebook"></i></a><a href="#"><i class="icon ion-social-instagram-outline"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a></div>
+            <div class="social-icons">
+                <a href="https://www.facebook.com"><i class="icon ion-social-facebook"></i></a>
+                <a href="https://www.instagram.com"><i class="icon ion-social-instagram-outline"></i></a>
+                <a href="https://www.twitter.com"><i class="icon ion-social-twitter"></i></a>
+            </div>
         </div>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
