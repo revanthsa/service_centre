@@ -56,4 +56,23 @@ class CustomUserAdmin(UserAdmin):
 				return User.objects.filter(email=request.user.email)
 		return User.objects.all()
 
+class ServicesAdmin(admin.ModelAdmin):
+	list_display = ["service_name", "vehicle_type", "desc", "mechanic"]
+	search_fields = ["mechanic__email", "service_name"]
+	list_filter = ["vehicle_type"]
+	staff_readonly_fields = ('mechanic',)
+
+	def get_readonly_fields(self, request, obj=None):
+		if not request.user.is_superuser:
+			return self.staff_readonly_fields
+		else:
+			return super(ServicesAdmin, self).get_readonly_fields(request, obj)
+
+	def get_queryset(self, request):
+		if not request.user.is_superuser:
+			if request.user.groups.filter(name='mechanics').exists():
+				return Services.objects.filter(mechanic__email=request.user.email)
+		return Services.objects.all()
+
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Services, ServicesAdmin)
