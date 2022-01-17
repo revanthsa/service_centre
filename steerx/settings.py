@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'core',
     'phonenumber_field',
     'crispy_forms',
+    'smart_selects',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -133,3 +134,6 @@ AUTH_USER_MODEL = 'core.Users'
 # Default country from phone field
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
 PHONENUMBER_DEFAULT_REGION = 'IN'
+
+# Django smart-select
+JQUERY_URL = True
