@@ -81,7 +81,7 @@ class User_Manager(BaseUserManager):
 
 class Users(AbstractUser):
 	class Meta:
-		verbose_name_plural = "View / Manage User Detail"
+		verbose_name_plural = "User Detail"
 
 	username = None
 	first_name = None
@@ -120,9 +120,9 @@ class Users(AbstractUser):
 
 class Services(models.Model):
 	class Meta:
-		verbose_name_plural = "Add or Manage Service(s)"
+		verbose_name_plural = "Service(s)"
 
-	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(groups__name = 'mechanics'))
+	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(groups__name = 'mechanics'), blank=True)
 	service_name = models.CharField(max_length=30)
 	desc = models.TextField()
 	vehicle_type = models.CharField(max_length=15, choices=VEHICLE_TYPE)
@@ -132,9 +132,9 @@ class Services(models.Model):
 
 class ServiceBooking(models.Model):
 	class Meta:
-		verbose_name_plural = "Add or Manage Customer Booking(s)"
+		verbose_name_plural = "Service Booking(s)"
 
-	customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer', limit_choices_to=Q(groups__name = 'customers'))
+	customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer', limit_choices_to=Q(groups__name = 'customers'), blank=True)
 	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mechanic', limit_choices_to=Q(groups__name = 'mechanics'))
 	vehicle_model =  models.CharField(max_length=50, verbose_name="Model")
 	vehicle_number = models.CharField(max_length=20, verbose_name="number", validators=[vehicle_number_regex])

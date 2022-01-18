@@ -73,6 +73,11 @@ class ServicesAdmin(admin.ModelAdmin):
 			if request.user.groups.filter(name='mechanics').exists():
 				return Services.objects.filter(mechanic__email=request.user.email)
 		return Services.objects.all()
+	
+	def save_model(self, request, obj, form, change):
+		if not obj.pk and request.user.groups.filter(name='mechanics').exists():
+			obj.mechanic = request.user
+		super().save_model(request, obj, form, change)
 
 class ServiceBookingAdmin(admin.ModelAdmin):
 	list_display = ["customer", "service", "service_date", "vehicle_number", "status"]
@@ -80,7 +85,7 @@ class ServiceBookingAdmin(admin.ModelAdmin):
 	list_filter = ["service", "status"]
 	ordering = ('service_date',)
 	mechanic_readonly_fields = ('customer', 'mechanic', 'service', 'issues', 'service_date', 'vehicle_model', 'vehicle_number', 'booked_date',)
-	customer_readonly_fields = ('status', 'booked_date',)
+	customer_readonly_fields = ('customer', 'status', 'booked_date',)
 
 	def get_readonly_fields(self, request, obj=None):
 		if request.user.groups.filter(name='mechanics').exists():
@@ -96,6 +101,11 @@ class ServiceBookingAdmin(admin.ModelAdmin):
 			elif request.user.groups.filter(name='mechanics').exists():
 				return ServiceBooking.objects.filter(mechanic__email=request.user.email)
 		return ServiceBooking.objects.all()
+
+	def save_model(self, request, obj, form, change):
+		if not obj.pk and request.user.groups.filter(name='customers').exists():
+			obj.customer = request.user
+		super().save_model(request, obj, form, change)
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Services, ServicesAdmin)
