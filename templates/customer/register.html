@@ -1,41 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!--Bootstrap CSS-->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-	</head>
-	<title></title>
-</head>
-<body>
-	{% load crispy_forms_tags %}
-	<div class="container py-5">
-		<h2>Register an account</h2><br>
+{% extends 'admin/base-fullscreen.html' %}
+{% load i18n static admin_volt %}
+
+{% block title %} Sign UP {% endblock %}
+{% block content %}
+<main>
+	<section class="m-3 bg-soft d-flex align-items-center">
+		<div class="container">
+			<div class="row justify-content-center form-bg-image"
+				 data-background-lg="{% static 'admin_volt/assets/img/illustrations/signin.svg' %}">
+				<div class="col-12 d-flex align-items-center justify-content-center">
+					<div class="bg-white shadow border-0 rounded border-light p-4 p-lg-5 w-100 fmxw-500">
+						<div class="text-center text-md-center mb-4 mt-md-0">
+							<h1 class="mb-0 h3">Sign UP</h1>
+						</div>
+						<form method="post" action="{{ app_path }}" class="mt-4">
+							{% csrf_token %}
+							{% load crispy_forms_tags %}
+							{{ form|crispy }}
+							<div class="p-4 d-grid">
+								<button type="submit" name="login" class="btn btn-gray-800">Sign IN</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</main>
+{% endblock content %}
+
+{% block extrascript %}
+    <script type="application/javascript">
 		{% if form.errors %}
 			{% for field in form %}
 				{% for error in field.errors %}
-					<div class="alert alert-danger">
-						<strong>{{ error|escape }}</strong>
-					</div>
+					notification.danger("{{ error|clean_text }}", 'top', 'right');
 				{% endfor %}
 			{% endfor %}
+
 			{% for error in form.non_field_errors %}
-				<div class="alert alert-danger">
-					<strong>{{ error|escape }}</strong>
-				</div>
+				notification.warning("{{ error|clean_text }}", 'top', 'right');
 			{% endfor %}
 		{% endif %}
-		<form method="POST">
-			{% csrf_token %}
-			{{ form|crispy }}
-			<button class="btn btn-primary" type="submit">Register</button>
-		</form>
-		<p class="text-center">If you already have an account, <a href="{% url 'admin:login' %}">login</a> instead.</p>
-	</div>
-
-	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-</body>
-</html>
+    </script>
+{% endblock %}
