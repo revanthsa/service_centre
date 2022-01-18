@@ -74,5 +74,29 @@ class ServicesAdmin(admin.ModelAdmin):
 				return Services.objects.filter(mechanic__email=request.user.email)
 		return Services.objects.all()
 
+class ServiceBookingAdmin(admin.ModelAdmin):
+	list_display = ["customer", "service", "service_date", "vehicle_number", "status"]
+	search_fields = ["customer", "mechanic", "vehicle_number" ,"vehicle_model", "service__service_name", "service_date", "status", "booked_date"]
+	list_filter = ["service", "status"]
+	ordering = ('service_date',)
+	mechanic_readonly_fields = ('customer', 'mechanic', 'service', 'issues', 'service_date', 'vehicle_model', 'vehicle_number', 'booked_date',)
+	customer_readonly_fields = ('status', 'booked_date',)
+
+	def get_readonly_fields(self, request, obj=None):
+		if request.user.groups.filter(name='mechanics').exists():
+			return self.mechanic_readonly_fields
+		elif request.user.groups.filter(name='customers').exists():
+			return self.customer_readonly_fields
+		return super(ServiceBookingAdmin, self).get_readonly_fields(request, obj)
+
+	def get_queryset(self, request):
+		if not request.user.is_superuser:
+			if request.user.groups.filter(name='customers').exists():
+				return ServiceBooking.objects.filter(customer__email=request.user.email)
+			elif request.user.groups.filter(name='mechanics').exists():
+				return ServiceBooking.objects.filter(mechanic__email=request.user.email)
+		return ServiceBooking.objects.all()
+
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Services, ServicesAdmin)
+admin.site.register(ServiceBooking, ServiceBookingAdmin)
