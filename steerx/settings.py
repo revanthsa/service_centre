@@ -133,9 +133,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.Users'
 
 # Redirections for users
-LOGIN_REDIRECT_URL='/login/'
-LOGIN_URL='/login/'
-LOGOUT_REDIRECT_URL='/login/'
+LOGIN_REDIRECT_URL='/dashboard/'
+LOGIN_URL='/dashboard/login/'
 
 # Default country from phone field
 PHONENUMBER_DB_FORMAT = 'NATIONAL'

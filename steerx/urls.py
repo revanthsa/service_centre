@@ -21,7 +21,7 @@ from django.urls import path, include
 # admin.site.enable_nav_sidebar = False
 
 urlpatterns = [
-    path('login/', admin.site.urls),
+    path('dashboard/', admin.site.urls),
     path('chaining/', include('smart_selects.urls')),
     path('', include('core.urls')),
 ]
