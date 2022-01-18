@@ -7,6 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
 
 # Others
+from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
 from django.db import transaction
@@ -121,20 +122,20 @@ class Services(models.Model):
 	class Meta:
 		verbose_name_plural = "Add or Manage Service(s)"
 
-	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'is_staff': True})
+	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(groups__name = 'mechanics'))
 	service_name = models.CharField(max_length=30)
 	desc = models.TextField()
 	vehicle_type = models.CharField(max_length=15, choices=VEHICLE_TYPE)
 
 	def __str__(self):
-		return str(str(self.service_name) + str(self.vehicle_type))
+		return str(str(self.service_name) + ' - ' + str(self.vehicle_type))
 
 class ServiceBooking(models.Model):
 	class Meta:
 		verbose_name_plural = "Add or Manage Customer Booking(s)"
 
-	customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer')
-	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mechanic', limit_choices_to={'is_staff': True})
+	customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer', limit_choices_to=Q(groups__name = 'customers'))
+	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mechanic', limit_choices_to=Q(groups__name = 'mechanics'))
 	vehicle_model =  models.CharField(max_length=50, verbose_name="Model")
 	vehicle_number = models.CharField(max_length=20, verbose_name="number", validators=[vehicle_number_regex])
 	service = ChainedForeignKey(Services, chained_field="mechanic", chained_model_field="mechanic", show_all=False, sort=True)
