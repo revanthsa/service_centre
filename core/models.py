@@ -6,6 +6,10 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
 
+# Import for Sending Mail
+from steerx.settings import EMAIL_HOST_USER
+from django.core.mail import send_mail
+
 # Others
 from django.db.models import Q
 from django.utils import timezone
@@ -142,4 +146,32 @@ class ServiceBooking(models.Model):
 	issues = models.TextField(blank=True, null=True, verbose_name="Describe Any Specific Issues")
 	status = models.CharField(max_length=50, choices=STATUS, default="Pending")
 	booked_date = models.DateField(default=timezone.now, editable=False)
-	service_date = models.DateField(default=timezone.now, editable=False)
+	service_date = models.DateField(default=timezone.now)
+
+	def __str__(self):
+		return str('Service ID - ' + str(self.id))
+
+	def save(self, **kwargs):
+		if not self.id:
+			temp = ServiceBooking.objects.filter(mechanic=self.mechanic, service_date__range=[self.service_date, self.service_date]).count()
+			if temp <= self.mechanic.mechanic_threshold:
+				self.status = "Booked"
+		super().save(*kwargs)
+		transaction.on_commit(self.statusMail)
+
+	# Function to send mail to customer and mechanic
+	def statusMail(self):
+		if self.status == "Booked":
+			subject = 'New Service has been Booked'
+			message = 'New service has been successfully booked, for the vehicle "' + str(self.vehicle_model) + '" on ' + str(self.service_date) + '\nIssue(s): ' + str(self.issues)
+			send_mail(subject, message, EMAIL_HOST_USER, [str(self.mechanic.email), str(self.customer.email)], fail_silently = False)
+		elif self.status == "Pending":
+			subject = 'New Service has been Booked - Status: ' + str(self.status)
+			message = 'New service has been booked, but the status is ' + str(self.status) +' for the vehicle "' + str(self.vehicle_model) + '"\nService date: ' + str(self.service_date) + '\nIssue(s): ' + str(self.issues)
+			send_mail(subject, message, EMAIL_HOST_USER, [str(self.mechanic.email), str(self.customer.email)], fail_silently = False)
+		elif self.status == "Ready for delivery":
+			customer_data = Users.objects.filter(email=self.customer.email).first()
+			subject = 'Service has been Completed for the vehicle: ' + str(self.vehicle_number)
+			message = 'Dear ' + str(customer_data.name) + ', Your service has been successfully completed, collect your vehicle "' + str(self.vehicle_number) + '", today or the next working day, Thankyou for your patience.'
+			send_mail(subject, message, EMAIL_HOST_USER, [str(customer_data.email)], fail_silently = False)
+		super().save()

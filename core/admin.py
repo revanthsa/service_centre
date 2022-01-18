@@ -84,13 +84,18 @@ class ServiceBookingAdmin(admin.ModelAdmin):
 	search_fields = ["customer", "mechanic", "vehicle_number" ,"vehicle_model", "service__service_name", "service_date", "status", "booked_date"]
 	list_filter = ["service", "status"]
 	ordering = ('service_date',)
+	# autocomplete_fields = ('mechanic', 'service',)
 	mechanic_readonly_fields = ('customer', 'mechanic', 'service', 'issues', 'service_date', 'vehicle_model', 'vehicle_number', 'booked_date',)
 	customer_readonly_fields = ('customer', 'status', 'booked_date',)
+	all_readonly_fields = [field.name for field in ServiceBooking._meta.fields]
 
 	def get_readonly_fields(self, request, obj=None):
 		if request.user.groups.filter(name='mechanics').exists():
 			return self.mechanic_readonly_fields
 		elif request.user.groups.filter(name='customers').exists():
+			if obj:
+				if obj.status in ['Completed', 'Ready for delivery']:
+					return self.all_readonly_fields
 			return self.customer_readonly_fields
 		return super(ServiceBookingAdmin, self).get_readonly_fields(request, obj)
 
