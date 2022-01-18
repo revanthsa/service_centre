@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+    <div class="py-4"> </div>
+    <div class="row"> </div>
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h2 class="fs-5 fw-bold mb-0">{% trans 'Recent actions' %}</h2>
+                                    {% trans 'My actions' %}
+                                </div>
+                                {% load log %}
+                                {% get_admin_log 10 as admin_log for_user user %}
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-items-center table-flush">
+                                <tbody>
+                                {% if admin_log %}
+                                    {% for entry in admin_log %}
+                                        <tr>
+                                            <th class="text-gray-900" scope="row">
+                                                {{ entry.object_repr }}
+                                            </th>
+                                            <td class="fw-bolder text-gray-500">
+                                                {% if entry.content_type %}
+                                                    <p class="text-muted">
+                                                        {% filter capfirst %}{{ entry.content_type }}{% endfilter %}</p>
+                                                {% else %}
+                                                    <p class="text-muted">{% trans 'Unknown content' %}</p>
+                                                {% endif %}
+                                            </td>
+                                            <td class="fw-bolder text-gray-500">
+                                                <a href="{{ entry.get_admin_url }}" type="button" rel="tooltip" title=""
+                                                   class="btn btn-link"
+                                                   data-original-title="{{ entry.object_repr }}">
+                                                    <i class="tim-icons icon-settings"></i>
+                                                </a>
+                                            </td>
+                                            <td class="fw-bolder text-gray-500">
+                                                {% if entry.is_addition %}
+                                                    <span class="fa fa-plus-circle text-success"></span>
+                                                {% endif %}
+                                                {% if entry.is_change %}
+                                                    <span class="fa fa-edit text-warning"></span>
+                                                {% endif %}
+                                                {% if entry.is_deletion %}
+                                                    <span class="fa fa-trash text-danger"></span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>{% trans 'None available' %}</p>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrascript %}{% endblock %}
