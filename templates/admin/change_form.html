@@ -85,28 +85,28 @@
                         <div class="{{ direction.panel }}">{% block form_top %}{% endblock %}</div>
 
                         <div>
-{#                            {% if is_popup %}#}
-{#                                <input type="hidden" name="{{ is_popup_var }}" value="1">#}
-{#                            {% endif %}#}
-{#    #}
-{#                            {% if to_field %}#}
-{#                                <input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">#}
-{#                            {% endif %}#}
-{#    #}
-{#                            {% if save_on_top %}#}
-{#                                {% block submit_buttons_top %}{% submit_row %}{% endblock %}#}
-{#                            {% endif %}#}
-{#    #}
-{#                            {% if errors %}#}
-{#                                <p class="errornote">#}
-{#                                    {% if errors|length == 1 %}#}
-{#                                        {% trans "Please correct the error below." %}#}
-{#                                    {% else %}#}
-{#                                        {% trans "Please correct the errors below." %}#}
-{#                                    {% endif %}#}
-{#                                </p>#}
-{#                                {{ adminform.form.non_field_errors }}#}
-{#                            {% endif %}#}
+                            {% if is_popup %}
+                                <input type="hidden" name="{{ is_popup_var }}" value="1">
+                            {% endif %}
+    
+                            {% if to_field %}
+                                <input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">
+                            {% endif %}
+    
+                            {% if save_on_top %}
+                                {% block submit_buttons_top %}{% submit_row %}{% endblock %}
+                            {% endif %}
+    
+                            {% if errors %}
+                                <p class="errornote">
+                                    {% if errors|length == 1 %}
+                                        {% trans "Please correct the error below." %}
+                                    {% else %}
+                                        {% trans "Please correct the errors below." %}
+                                    {% endif %}
+                                </p>
+                                {{ adminform.form.non_field_errors }}
+                            {% endif %}
 
                             {% block field_sets %}
                                 {% for fieldset in adminform %}
@@ -134,6 +134,28 @@
                                         {% if adminform and add %}
                                         data-model-name="{{ opts.model_name }}"
                                         {% endif %}>
+                                </script>
+                                <script>
+                                    {% for fieldset in adminform %}
+                                    {% for line in fieldset %}
+                                    {% for field in line %}
+                                        {% if field.field.name in 'service_date, booked_date' %}
+                                            document.getElementById('id_{{field.field.name}}').type = 'date';
+                                            document.getElementById('id_{{field.field.name}}').classList.add('form-control');
+                                        {% endif %}
+                                        {% if field.field.name in 'phone' %}
+                                            document.getElementById('id_{{field.field.name}}').classList.add('form-control');
+                                        {% endif %}
+                                        {% if field.field.name in 'last_login, date_joined' %}
+                                            document.getElementById('id_{{field.field.name}}_0').type = 'date';
+                                            document.getElementById('id_{{field.field.name}}_0').classList.add('form-control');
+                                            document.getElementById('id_{{field.field.name}}_1').type = 'time';
+                                            document.getElementById('id_{{field.field.name}}_1').classList.add('form-control');
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endfor %}
+                                    {% endfor %}
+                                    $('select').attr("style", "display:initial;");
                                 </script>
                             {% endblock %}
 
