@@ -136,6 +136,7 @@
 <script src="{% static 'admin_volt/assets/js/volt.js' %}"></script>
 <script src="{% static 'admin_volt/assets/js/scripts.js' %}"></script>
 <script src="https://kit.fontawesome.com/4fd3baa9fc.js" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
     {% if messages %}
@@ -143,6 +144,7 @@
             notification['{{ message.tags }}']("<p class='{{ direction.panel }}'>" + '{{ message|capfirst }}' + "</p>", 'top', '{{ direction.notify }}');
         {% endfor %}
     {% endif %}
+    $('select').attr("style", "display:initial;");
 </script>
 
 {% block extrascript %}{% endblock %}
