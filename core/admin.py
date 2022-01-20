@@ -111,6 +111,12 @@ class ServiceBookingAdmin(admin.ModelAdmin):
 		if not obj.pk and request.user.groups.filter(name='customers').exists():
 			obj.customer = request.user
 		super().save_model(request, obj, form, change)
+	
+	def formfield_for_foreignkey(self, db_field, request, **kwargs):
+		if request.user.groups.filter(name='customers').exists():
+			if db_field.name == "mechanic":
+				kwargs["queryset"] = Users.objects.filter(pin_code=request.user.pin_code)
+		return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Services, ServicesAdmin)
