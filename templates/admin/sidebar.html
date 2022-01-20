@@ -19,7 +19,7 @@
         <div class="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
             <div class="d-flex align-items-center">
                 <div class="d-block">
-                    <h2 class="h5 mb-3">Hi, {{ request.user.name|default:request.user.email }}</h2>
+                    <h2 class="h5 mb-3">Hi, {{ request.user.name|title }}</h2>
                     <a href="{% url 'admin:logout' %}" class="btn btn-secondary btn-sm d-inline-flex align-items-center">
                         <span class="fa fa-sign-out"></span> Sign Out
                     </a>
