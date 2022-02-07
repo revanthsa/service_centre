@@ -17,12 +17,17 @@ User = get_user_model()
 class CustomUserAdmin(UserAdmin):
 	fieldsets = (
 		(None, {'fields': ('email', 'password')}),
-		(_('Personal info'), {'fields': ('name', 'phone', 'address', 'pin_code')}),
+		(_('Personal info'), {'fields': ('name', 'phone', 'address', 'pin_code', 'mechanic_threshold')}),
 		(_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
 		                               'groups', 'user_permissions')}),
 		(_('Important dates'), {'fields': ('last_login', 'date_joined')}),
 	)
 	staff_fieldsets = (
+		(None, {'fields': ('email', 'password')}),
+		(_('Personal info'), {'fields': ('name', 'phone', 'address', 'pin_code', 'mechanic_threshold')}),
+		(_('Important dates'), {'fields': ('last_login', 'date_joined')}),
+	)
+	customer_fieldsets = (
 		(None, {'fields': ('email', 'password')}),
 		(_('Personal info'), {'fields': ('name', 'phone', 'address', 'pin_code')}),
 		(_('Important dates'), {'fields': ('last_login', 'date_joined')}),
@@ -46,6 +51,8 @@ class CustomUserAdmin(UserAdmin):
 
 	def get_fieldsets(self, request, obj=None):
 		if not request.user.is_superuser:
+			if request.user.groups.filter(name='customers').exists():
+				return self.customer_fieldsets
 			return self.staff_fieldsets
 		else:
 			return super(CustomUserAdmin, self).get_fieldsets(request, obj)
@@ -80,7 +87,7 @@ class ServicesAdmin(admin.ModelAdmin):
 		super().save_model(request, obj, form, change)
 
 class ServiceBookingAdmin(admin.ModelAdmin):
-	list_display = ["customer", "service", "service_date", "vehicle_number", "status"]
+	list_display = ["mechanic", "service", "service_date", "vehicle_number", "status"]
 	search_fields = ["customer", "mechanic", "vehicle_number" ,"vehicle_model", "service__service_name", "service_date", "status", "booked_date"]
 	list_filter = ["service", "status"]
 	ordering = ('service_date',)
