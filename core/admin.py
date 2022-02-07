@@ -65,12 +65,15 @@ class CustomUserAdmin(UserAdmin):
 
 class ServicesAdmin(admin.ModelAdmin):
 	list_display = ["service_name", "vehicle_type", "desc", "mechanic"]
-	search_fields = ["mechanic__email", "service_name"]
+	search_fields = ["mechanic__email", "service_name", "desc"]
 	list_filter = ["vehicle_type"]
 	staff_readonly_fields = ('mechanic',)
+	customer_readonly_fields = ('service_name', 'vehicle_type', 'desc', 'mechanic')
 
 	def get_readonly_fields(self, request, obj=None):
 		if not request.user.is_superuser:
+			if request.user.groups.filter(name='customers').exists():
+				return self.customer_readonly_fields
 			return self.staff_readonly_fields
 		else:
 			return super(ServicesAdmin, self).get_readonly_fields(request, obj)
@@ -79,6 +82,9 @@ class ServicesAdmin(admin.ModelAdmin):
 		if not request.user.is_superuser:
 			if request.user.groups.filter(name='mechanics').exists():
 				return Services.objects.filter(mechanic__email=request.user.email)
+			elif request.user.groups.filter(name='customers').exists():
+				# return Services.objects.filter(mechanic__pin_code=request.user.pin_code)
+				return Services.objects.all()
 		return Services.objects.all()
 	
 	def save_model(self, request, obj, form, change):
@@ -87,7 +93,7 @@ class ServicesAdmin(admin.ModelAdmin):
 		super().save_model(request, obj, form, change)
 
 class ServiceBookingAdmin(admin.ModelAdmin):
-	list_display = ["mechanic", "service", "service_date", "vehicle_number", "status"]
+	list_display = ["customer", "service", "service_date", "vehicle_number", "status"]
 	search_fields = ["customer", "mechanic", "vehicle_number" ,"vehicle_model", "service__service_name", "service_date", "status", "booked_date"]
 	list_filter = ["service", "status"]
 	ordering = ('service_date',)
