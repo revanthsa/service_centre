@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import *
+from django.utils.safestring import mark_safe
 
 # Few customizations
 admin.site.site_title = "Steerx Login"
@@ -64,11 +65,16 @@ class CustomUserAdmin(UserAdmin):
 		return User.objects.all()
 
 class ServicesAdmin(admin.ModelAdmin):
-	list_display = ["service_name", "vehicle_type", "desc", "mechanic"]
+	list_display = ["service_name", "vehicle_type", "desc", "mechanic", "getAddService"]
 	search_fields = ["mechanic__email", "service_name", "desc"]
 	list_filter = ["vehicle_type"]
 	staff_readonly_fields = ('mechanic',)
 	customer_readonly_fields = ('service_name', 'vehicle_type', 'desc', 'mechanic')
+
+	def getAddService(self, ServicesAdmin):
+		url = '/dashboard/core/servicebooking/add/'
+		return mark_safe("""<a href="{url}" target="_blank">{text}</a>""".format(url=url,text=_("Book a Service"),))
+	getAddService.short_description = _("Book Service")
 
 	def get_readonly_fields(self, request, obj=None):
 		if not request.user.is_superuser:
