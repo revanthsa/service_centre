@@ -65,15 +65,27 @@ class CustomUserAdmin(UserAdmin):
 		return User.objects.all()
 
 class ServicesAdmin(admin.ModelAdmin):
-	list_display = ["service_name", "vehicle_type", "desc", "mechanic", "getAddService"]
+	mech_list_display = ["service_name", "vehicle_type", "desc", "mechanic"]
+	customer_list_display = ["service_name", "vehicle_type", "desc", "mechanic", "getAddService"]
 	search_fields = ["mechanic__email", "service_name", "desc"]
 	list_filter = ["vehicle_type"]
 	staff_readonly_fields = ('mechanic',)
 	customer_readonly_fields = ('service_name', 'vehicle_type', 'desc', 'mechanic')
 
+
+	def get_list_display(self, request):
+		if not request.user.is_superuser:
+			if request.user.groups.filter(name='customers').exists():
+				return self.customer_list_display
+			return self.mech_list_display
+		return super().get_list_display(request)
+
 	def getAddService(self, ServicesAdmin):
 		url = '/dashboard/core/servicebooking/add/'
-		return mark_safe("""<a href="{url}" target="_blank">{text}</a>""".format(url=url,text=_("Book a Service"),))
+		# <button type="submit" class="btn btn-fill btn-sm btn-primary" title="{% trans "Run the selected action" %}" name="index" value="{{ action_index|default:0 }}">
+        #         {% trans "Book a Service" %}
+        # </button>
+		return mark_safe("""<a href="{url}" class="btn btn-fill btn-sm btn-primary" target="_blank">{text}</a>""".format(url=url,text=_("Book a Service"),))
 	getAddService.short_description = _("Book Service")
 
 	def get_readonly_fields(self, request, obj=None):
