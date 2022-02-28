@@ -111,17 +111,28 @@ class ServicesAdmin(admin.ModelAdmin):
 		super().save_model(request, obj, form, change)
 
 class ServiceBookingAdmin(admin.ModelAdmin):
-	list_display = ["customer", "service", "service_date", "vehicle_number", "status"]
+	customer_list_display = ["mechanic", "service", "service_date", "vehicle_number", "status"]
+	mech_list_display = ["customer", "service", "service_date", "vehicle_number", "status"]
 	search_fields = ["customer", "mechanic", "vehicle_number" ,"vehicle_model", "service__service_name", "service_date", "status", "booked_date"]
 	list_filter = ["service", "status"]
 	ordering = ('service_date',)
 	# autocomplete_fields = ('mechanic', 'service',)
 	mechanic_readonly_fields = ('customer', 'mechanic', 'service', 'issues', 'service_date', 'vehicle_model', 'vehicle_number', 'booked_date',)
-	customer_readonly_fields = ('customer', 'status', 'booked_date',)
+	customer_readonly_fields = ('customer', 'status', 'booked_date', 'payable_amount', 'delivery_date',)
 	all_readonly_fields = [field.name for field in ServiceBooking._meta.fields]
+
+	def get_list_display(self, request):
+		if not request.user.is_superuser:
+			if request.user.groups.filter(name='customers').exists():
+				return self.customer_list_display
+			return self.mech_list_display
+		return super().get_list_display(request)
 
 	def get_readonly_fields(self, request, obj=None):
 		if request.user.groups.filter(name='mechanics').exists():
+			if obj:
+				if obj.status in ['Completed', 'Ready for delivery']:
+					return self.all_readonly_fields
 			return self.mechanic_readonly_fields
 		elif request.user.groups.filter(name='customers').exists():
 			if obj:

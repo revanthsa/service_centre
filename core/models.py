@@ -1,3 +1,4 @@
+from ast import mod
 from django.db import models
 # Imports for Abstract User
 from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
@@ -147,6 +148,8 @@ class ServiceBooking(models.Model):
 	status = models.CharField(max_length=50, choices=STATUS, default="Pending")
 	booked_date = models.DateField(default=timezone.now, editable=False)
 	service_date = models.DateField(default=timezone.now)
+	delivery_date = models.DateField(blank=True, null=True, verbose_name="Expected Delivery Date")
+	payable_amount = models.FloatField(default=0)
 
 	def __str__(self):
 		return str('Service ID - ' + str(self.id))
