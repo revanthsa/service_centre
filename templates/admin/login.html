@@ -59,7 +59,12 @@
                                 </div>
                                 <div class="d-flex justify-content-between align-items-top m-2">
                                     <div>
-                                        <a href="{% url 'register' %}" class="small text-right">{% trans 'Don\'t Have an account? Register Here!' %}</a>
+                                        <a href="{% url 'register' %}" class="small text-right">{% trans "Don't Have an account? Register Here!" %}</a>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-top m-2">
+                                    <div>
+                                        <a href="{% url 'password_reset' %}" class="small text-right">{% trans "Forgot password? Reset Here!" %}</a>
                                     </div>
                                 </div>
                             </form>
@@ -89,9 +94,9 @@
 
         {% if form.errors and not form.non_field_errors %}
             {% if form.errors.items|length == 1 %}
-                notification.warning("{% trans "Please correct the error below." %}", 'top', 'right');
+                notification.warning("{% trans "Please correct the error below." %}", 'bottom', 'right');
             {% else %}
-                notification.warning("{% trans "Please correct the errors below." %}", 'top', 'right');
+                notification.warning("{% trans "Please correct the errors below." %}", 'bottom', 'right');
             {% endif %}
         {% endif %}
 
