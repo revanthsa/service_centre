@@ -30,6 +30,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'admin_volt.apps.AdminVoltConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'core',
     'phonenumber_field',
     'crispy_forms',
+    'smart_selects',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -130,6 +132,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom User Model
 AUTH_USER_MODEL = 'core.Users'
 
+# Redirections for users
+LOGIN_REDIRECT_URL='/dashboard/'
+LOGIN_URL='/dashboard/login/'
+
 # Default country from phone field
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
 PHONENUMBER_DEFAULT_REGION = 'IN'
+
+# Django smart-select
+USE_DJANGO_JQUERY = True
+
+# Mail Server
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = '***REMOVED***'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False

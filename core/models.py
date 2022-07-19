@@ -6,14 +6,42 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
 
+# Import for Sending Mail
+from steerx.settings import EMAIL_HOST_USER
+from django.core.mail import send_mail
+
 # Others
+from django.db.models import Q
+from django.utils import timezone
+from django.conf import settings
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+from smart_selects.db_fields import ChainedForeignKey
 
-# Regex for Indian Pincode
+# Regex validators
 pincode_regex = RegexValidator(
 	regex=r'^[1-9]{1}[0-9]{5}$',
 	message="Invalid Indian pincode Detail!\nContact Us, if you have entered the correct Pincode Detail and still it didn't accept the given Input"
+)
+
+vehicle_number_regex = RegexValidator(
+	regex=r'^[A-Z]{2}[ -][0-9]{1,2}(?: [A-Z])?(?: [A-Z]*)? [0-9]{1,4}$', 
+	message="Invalid Number Plate Detail!\nContact Us, if you have entered the correct Number Plate Detail and sill it didn't accept the given Input"
+)
+
+# Choice fields
+VEHICLE_TYPE = (
+	('2 WHEELER', '2 WHEELER'),
+	('4 WHEELER', '4 WHEELER'),
+	('HEAVY VEHICLE', 'HEAVY VEHICLE'),
+)
+
+STATUS = (
+	('Pending','Pending'),
+	('Booked','Booked'),
+	('Under Service','Under Service'),
+	('Ready for delivery','Ready for delivery'),
+	('Completed','Completed'),
 )
 
 # Create your models here.
@@ -57,7 +85,7 @@ class User_Manager(BaseUserManager):
 
 class Users(AbstractUser):
 	class Meta:
-		verbose_name_plural = "View / Manage User Detail"
+		verbose_name_plural = "User Detail"
 
 	username = None
 	first_name = None
@@ -68,6 +96,7 @@ class Users(AbstractUser):
 	phone = PhoneNumberField(max_length=13, unique=True)
 	address = models.TextField()
 	pin_code = models.CharField(max_length=10, validators=[pincode_regex])
+	mechanic_threshold = models.IntegerField(default=5)
 	is_staff = models.BooleanField(
 		_('staff status'),
 		default=True,
@@ -91,4 +120,58 @@ class Users(AbstractUser):
 		if self.is_superuser == False:
 			if not self.groups.filter(name='mechanics').exists():
 				self.groups.add(Group.objects.get(name='customers'))
+		super().save()
+
+class Services(models.Model):
+	class Meta:
+		verbose_name_plural = "Service(s)"
+
+	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to=Q(groups__name = 'mechanics'), blank=True)
+	service_name = models.CharField(max_length=30)
+	desc = models.TextField()
+	vehicle_type = models.CharField(max_length=15, choices=VEHICLE_TYPE)
+
+	def __str__(self):
+		return str(str(self.service_name) + ' - ' + str(self.vehicle_type))
+
+class ServiceBooking(models.Model):
+	class Meta:
+		verbose_name_plural = "Service Booking(s)"
+
+	customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='customer', limit_choices_to=Q(groups__name = 'customers'), blank=True)
+	mechanic = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mechanic', limit_choices_to=Q(groups__name = 'mechanics'))
+	vehicle_model =  models.CharField(max_length=50, verbose_name="Model")
+	vehicle_number = models.CharField(max_length=20, verbose_name="number", validators=[vehicle_number_regex])
+	service = ChainedForeignKey(Services, chained_field="mechanic", chained_model_field="mechanic", show_all=False, sort=True)
+	issues = models.TextField(blank=True, null=True, verbose_name="Describe Any Specific Issues")
+	status = models.CharField(max_length=50, choices=STATUS, default="Pending")
+	booked_date = models.DateField(default=timezone.now, editable=False)
+	service_date = models.DateField(default=timezone.now)
+
+	def __str__(self):
+		return str('Service ID - ' + str(self.id))
+
+	def save(self, **kwargs):
+		if not self.id:
+			temp = ServiceBooking.objects.filter(mechanic=self.mechanic, service_date__range=[self.service_date, self.service_date]).count()
+			if temp <= self.mechanic.mechanic_threshold:
+				self.status = "Booked"
+		super().save(*kwargs)
+		transaction.on_commit(self.statusMail)
+
+	# Function to send mail to customer and mechanic
+	def statusMail(self):
+		if self.status == "Booked":
+			subject = 'New Service has been Booked'
+			message = 'New service has been successfully booked, for the vehicle "' + str(self.vehicle_model) + '" on ' + str(self.service_date) + '\nIssue(s): ' + str(self.issues)
+			send_mail(subject, message, EMAIL_HOST_USER, [str(self.mechanic.email), str(self.customer.email)], fail_silently = False)
+		elif self.status == "Pending":
+			subject = 'New Service has been Booked - Status: ' + str(self.status)
+			message = 'New service has been booked, but the status is ' + str(self.status) +' for the vehicle "' + str(self.vehicle_model) + '"\nService date: ' + str(self.service_date) + '\nIssue(s): ' + str(self.issues)
+			send_mail(subject, message, EMAIL_HOST_USER, [str(self.mechanic.email), str(self.customer.email)], fail_silently = False)
+		elif self.status == "Ready for delivery":
+			customer_data = Users.objects.filter(email=self.customer.email).first()
+			subject = 'Service has been Completed for the vehicle: ' + str(self.vehicle_number)
+			message = 'Dear ' + str(customer_data.name) + ', Your service has been successfully completed, collect your vehicle "' + str(self.vehicle_number) + '", today or the next working day, Thankyou for your patience.'
+			send_mail(subject, message, EMAIL_HOST_USER, [str(customer_data.email)], fail_silently = False)
 		super().save()
